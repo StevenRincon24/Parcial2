@@ -1,3 +1,4 @@
+const url = "https://api-dishes.vercel.app";
 function loadAuthores() {
   return new Promise((resolve, reject) => {
     fetch("https://api-dishes.vercel.app/")
@@ -7,57 +8,94 @@ function loadAuthores() {
   });
 }
 
-const loadValues = () => {
+function loadDishes(id) {
+  console.log(id);
+  if (id != "") {
+    return new Promise((resolve, reject) => {
+      fetch(url + "/" + id)
+        .then((resp) => resp.json())
+        .then((resp) => resolve(resp))
+        .catch((err) => reject(err));
+    });
+  } else {
+    return new Promise((resolve, reject) => {
+      fetch(url)
+        .then((resp) => resp.json())
+        .then((resp) => resolve(resp))
+        .catch((err) => reject(err));
+    });
+  }
+}
+
+const fillData = function () {
   const id = document.getElementById("id").value;
   console.log(id);
 
-  const name = document.getElementById("name").value;
+  loadDishes(id).then((resp) => {
+    if (resp.state) {
+      console.log(resp.data);
+      const dish = resp.data;
+      document.getElementById("atributos").style.display = "block";
+      document.getElementById("objectId").value = dish._id;
+      document.getElementById("idDish").value = dish.idDish;
+      document.getElementById("name").value = dish.name;
+      document.getElementById("calories").value = dish.calories;
+      document.getElementById("isVegetarian").value = dish.isVegetarian;
+      document.getElementById("value").value = dish.value;
+      document.getElementById("comments").value = dish.comments;
+    } else {
+      console.log("error" + resp.state);
+    }
+  });
+};
 
-  const calories = document.getElementById("calories").value;
+const loadData = () => {
+  const id = document.getElementById("idDish").value;
+  const name = document.getElementById("nameDish").value;
+  const calories = document.getElementById("caloriesDish").value;
+  const vegetarian = document.getElementById("vegetarianDish").value;
+  const value = document.getElementById("valueDish").value;
+  const comments = document.getElementById("commentsDish").value;
 
-  const vegetarian = document.getElementById("vegetarian").value;
-
-  const value = document.getElementById("value").value;
-
-  const comment = document.getElementById("comment").value;
   const data = {
     idDish: id,
     name: name,
     calories: calories,
     isVegetarian: vegetarian,
     value: value,
-    comments: comment,
+    comments: comments,
   };
 
   return JSON.stringify(data);
 };
-function sendDish() {
-  const data = loadValues();
-  console.log(data);
-  const URL = "https://api-dishes.vercel.app";
-  fetch(URL, {
+
+function sendData() {
+  const body = loadData();
+
+  fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(data),
+    body: body,
   })
     .then((resp) => {
-      console.log(resp);
-      if (resp.status == 200) {
+      if (resp.status != 208) {
         return resp.json();
       } else {
-        throw new Error(
-          "Error en la solicitud. Por favor, intenta nuevamente."
-        );
+        return false;
       }
     })
-    .then((data) => {
-      if (state) {
-        alert("Plato creado exitosamente. ID del plato: " + data.data.idDish);
-      } else {
-        alert("El plato ya existe.");
+    .then((resp) => {
+      console.log();
+      if (resp.state) {
+        alert("Dish add");
+        location.href = "/";
+      } else if (!resp.state) {
+        alert("Error to add");
       }
     })
-    .catch((err) => alert(err.message));
+    .catch((err) => {
+      alert(`Error ${err}`);
+    });
 }
