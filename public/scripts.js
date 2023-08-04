@@ -8,7 +8,7 @@ function loadAuthores() {
   });
 }
 
-function loadDishes(id) {
+function infoDish(id) {
   console.log(id);
   if (id != "") {
     return new Promise((resolve, reject) => {
@@ -31,7 +31,7 @@ const fillData = function () {
   const id = document.getElementById("id").value;
   console.log(id);
 
-  loadDishes(id).then((resp) => {
+  infoDish(id).then((resp) => {
     if (resp.state) {
       console.log(resp.data);
       const dish = resp.data;
